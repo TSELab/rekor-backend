@@ -1,8 +1,9 @@
 from backend.db import db
 
 
-class StatsModel(db.Model):
+class EntriesModel(db.Model):
     __bind_key__ = None
+    __tablename__ = 'entries'
 
     idx = db.Column(db.Integer, primary_key=True)
     payload = db.Column(db.Text)
@@ -10,7 +11,9 @@ class StatsModel(db.Model):
     def __repr__(self):
         return f'Stats {self.idx}'
 
+    def json(self):
+        return {'idx': self.idx, 'payload': self.payload}
+
     @classmethod
     def newest_entry(cls):
-        print(cls.query.filter_by(idx=1).first())
-        return {'this': 'is a test'}
+        return cls.query.order_by(cls.idx.desc()).first()

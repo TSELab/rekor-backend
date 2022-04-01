@@ -3,10 +3,11 @@ import os
 from flask import Flask
 from flask_restful import Api
 
-from backend.resources.stats import Stats
+from backend.resources.entries import Entries
 
 
-DB_STR = 'sqlite:///'
+SQLITE = 'sqlite:///'
+DB_PATH = '/home/achung/Rekor/rekor-backend/rekor.db'
 
 
 def create_app(test_config=None):
@@ -14,11 +15,14 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
-        SQLALCHEMY_DATABASE_URI=DB_STR+os.path.join(app.root_path, 'rekor.db'),
-        SQLALCHEMY_BINDS={
-            'graphs': DB_STR+os.path.join(app.root_path, 'graphs.db')},
+
+        SQLALCHEMY_DATABASE_URI=SQLITE + DB_PATH,
+        # SQLALCHEMY_BINDS={'graphs': SQLITE+os.path.join(app.root_path, 'graphs.db')},
+        SQLALCHEMY_ECHO=False,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
+
+    api = Api(app)
 
     if test_config is None:
         # load the instance config, if it exists, when not testing
@@ -33,12 +37,12 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    from backend.db import db
-    db.init_app(app)
-    with app.app_context():
+    @app.before_first_request
+    def create_tables():
+        from backend.db import db
+        db.init_app(app)
         db.create_all()
 
-    api = Api(app)
-    api.add_resource(Stats, '/stats')
+    api.add_resource(Entries, '/entries')
 
     return app

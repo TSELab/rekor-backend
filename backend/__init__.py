@@ -3,13 +3,21 @@ import os
 from flask import Flask
 from flask_restful import Api
 
+from backend.resources.stats import Stats
+
+
+DB_STR = 'sqlite:///'
+
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',
-        DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
+        SQLALCHEMY_DATABASE_URI=DB_STR+os.path.join(app.root_path, 'rekor.db'),
+        SQLALCHEMY_BINDS={
+            'graphs': DB_STR+os.path.join(app.root_path, 'graphs.db')},
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
 
     if test_config is None:
@@ -25,6 +33,12 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    api = (app)
+    from backend.db import db
+    db.init_app(app)
+    with app.app_context():
+        db.create_all()
+
+    api = Api(app)
+    api.add_resource(Stats, '/stats')
 
     return app

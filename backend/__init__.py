@@ -7,12 +7,13 @@ from backend.resources.entries import Entries
 
 
 SQLITE = 'sqlite:///'
-DB_PATH = '/home/achung/Rekor/rekor-backend/rekor.db'
+# DB_PATH = '/home/achung/Rekor/rekor-backend/rekor.db'
 
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
+    DB_PATH = os.path.join(app.root_path, '../rekor.db')
     app.config.from_mapping(
         SECRET_KEY='dev',
 

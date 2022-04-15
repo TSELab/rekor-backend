@@ -7,17 +7,22 @@ from backend.resources.entries import Entries
 
 
 SQLITE = 'sqlite:///'
-# DB_PATH = '/home/achung/Rekor/rekor-backend/rekor.db'
+DB_PATH = os.path.join(__file__, '../../rekor.db')
+DB_URI = SQLITE + DB_PATH
+DB_USER = os.getenv('DB_USER')
+DB_PSSWD = os.getenv('DB_PSSWD')
+DB_HOST = os.getenv('DB_HOST')
+if DB_USER and DB_PSSWD and DB_HOST:
+    DB_URI = "mariadb+pymysql://" + DB_USER + ":" + DB_PSSWD + "@" + DB_HOST
 
 
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
-    DB_PATH = os.path.join(app.root_path, '../rekor.db')
     app.config.from_mapping(
         SECRET_KEY='dev',
 
-        SQLALCHEMY_DATABASE_URI=SQLITE + DB_PATH,
+        SQLALCHEMY_DATABASE_URI=DB_URI,
         # SQLALCHEMY_BINDS={'graphs': SQLITE+os.path.join(app.root_path, 'graphs.db')},
         SQLALCHEMY_ECHO=False,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,

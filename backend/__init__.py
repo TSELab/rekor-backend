@@ -6,14 +6,15 @@ from flask_restful import Api
 from backend.resources.entries import Entries
 
 
-SQLITE = 'sqlite:///'
 DB_PATH = os.path.join(__file__, '../../rekor.db')
-DB_URI = SQLITE + DB_PATH
-DB_USER = os.getenv('DB_USER')
-DB_PSSWD = os.getenv('DB_PSSWD')
+DB_URI = 'sqlite:///' + DB_PATH
+DB_ROOT_PSSWD_FILE = os.getenv('DB_ROOT_PASSWORD_FILE')
 DB_HOST = os.getenv('DB_HOST')
-if DB_USER and DB_PSSWD and DB_HOST:
-    DB_URI = "mariadb+pymysql://" + DB_USER + ":" + DB_PSSWD + "@" + DB_HOST
+DB_NAME = os.getenv('DB_NAME')
+if DB_ROOT_PSSWD_FILE and DB_HOST and DB_NAME:
+    with open(DB_ROOT_PSSWD_FILE) as f_psswd:
+        DB_PSSWD = f_psswd.readline().replace('\n', '')
+    DB_URI = f"mariadb://root:{DB_PSSWD}@{DB_HOST}:3306/{DB_NAME}"
 
 
 def create_app(test_config=None):
@@ -27,6 +28,7 @@ def create_app(test_config=None):
         SQLALCHEMY_ECHO=False,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
+    print(DB_URI, flush=True)
 
     api = Api(app)
 
@@ -46,8 +48,11 @@ def create_app(test_config=None):
     @app.before_first_request
     def create_tables():
         from backend.db import db
-        db.init_app(app)
-        db.create_all()
+        try:
+            db.init_app(app)
+            db.create_all()
+        except Exception as exception:
+            print(exception)
 
     api.add_resource(Entries, '/entries')
 

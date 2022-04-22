@@ -2,6 +2,7 @@ import os
 
 from flask import Flask
 from flask_restful import Api
+from flask_cors import CORS
 
 from backend.resources.entries import Entries
 
@@ -20,6 +21,7 @@ if DB_ROOT_PSSWD_FILE and DB_HOST and DB_NAME:
 def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
+    CORS(app)
     app.config.from_mapping(
         SECRET_KEY='dev',
 

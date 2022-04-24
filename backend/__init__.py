@@ -26,7 +26,6 @@ def create_app(test_config=None):
         SQLALCHEMY_ECHO=False,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
-    print(DB_URI, flush=True)
 
     api = Api(app)
 
@@ -50,7 +49,7 @@ def create_app(test_config=None):
             db.init_app(app)
             db.create_all()
         except Exception as exception:
-            print(exception)
+            print(exception, flush=True)
 
     api.add_resource(Entries, '/entries')
 
